@@ -1,0 +1,58 @@
+---
+
+- name: Ensure etcd dirs are present
+  file:
+    dest: "{{ item.dest }}"
+    state: directory
+    recurse: yes
+  with_items:
+    - dest: "/etc/etcd"
+    - dest: "/etc/systemd/system"
+    - dest: "/usr/bin/"
+    - dest: "{{ etcd_datadir }}"
+    - dest: "/tmp/etcd-v3.0.1-linux-amd64"
+
+- name: Get Etcd tarball
+  get_url:
+    url: "https://github.com/coreos/etcd/releases/download/v3.0.1/etcd-v3.0.1-linux-amd64.tar.gz"
+    dest: "/tmp/etcd-v3.0.1-linux-amd64.tar.gz"
+
+- name: Unarchive etcd
+  unarchive:
+    src: "/tmp/etcd-v3.0.1-linux-amd64.tar.gz"
+    dest: "/tmp/etcd-v3.0.1-linux-amd64"
+    copy: no
+    creates: "/tmp/etcd-v3.0.1-linux-amd64/etcd-v3.0.1-linux-amd64/etcd"
+
+- name: Copy etcd binaries to bin dir
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "0775"
+    remote_src: yes
+  with_items:
+    - src: "/tmp/etcd-v3.0.1-linux-amd64/etcd-v3.0.1-linux-amd64/etcd"
+      dest: "/usr/bin/etcd"
+    - src: "/tmp/etcd-v3.0.1-linux-amd64/etcd-v3.0.1-linux-amd64/etcdctl"
+      dest: "/usr/bin/etcdctl"
+
+- name: Template etcd service systemd file
+  register: template_etcd_service
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - src: "etc/systemd/system/etcd.service"
+      dest: "/etc/systemd/system/etcd.service"
+
+- name: Reload systemd daemon
+  when: template_etcd_service|changed
+  shell: "systemctl daemon-reload"
+
+- name: Enable systemd etcd
+  shell: "systemctl enable etcd"
+
+- name: Enable systemd etcd
+  service:
+    name: etcd
+    state: started

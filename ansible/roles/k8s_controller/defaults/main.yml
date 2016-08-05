@@ -1,0 +1,18 @@
+---
+
+k8s_controller_version: "v1.3.0"
+k8s_controller_bin_dir: "/usr/bin"
+k8s_controller_internal_ip: "{{ hostvars[inventory_hostname]['ansible_enp0s8']['ipv4']['address'] }}"
+k8s_controller_cluster_name: "kubernetes"
+k8s_controller_cluster_cidr: "10.200.0.0/16"
+k8s_controller_root_cafile: "/var/lib/kubernetes/ca.pem"
+k8s_controller_etcd_cafile: "/var/lib/kubernetes/ca.pem"
+k8s_controller_kubelet_ca: "/var/lib/kubernetes/ca.pem"
+k8s_controller_etcd_servers: "https://10.240.0.10:2379,https://10.240.0.11:2379,https://10.240.0.12:2379"
+k8s_controller_authorization_policyfile: "/var/lib/kubernetes/authorization-policy.jsonl"
+k8s_controller_service_account_keyfile: "/var/lib/kubernetes/kubernetes-key.pem"
+k8s_controller_service_account_ip_range: "10.32.0.0/24"
+k8s_controller_service_service_node_port_range: "30000-32767"
+k8s_controller_tls_certfile: "/var/lib/kubernetes/kubernetes.pem"
+k8s_controller_tls_private_keyfile: "/var/lib/kubernetes/kubernetes-key.pem"
+k8s_controller_token_authfile: "/var/lib/kubernetes/token.csv"

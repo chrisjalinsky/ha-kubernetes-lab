@@ -1,0 +1,78 @@
+---
+
+- name: Install apache2
+  apt:
+    name: apache2
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Download cfssl
+  get_url:
+    url: "{{ item.url }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - url: "https://pkg.cfssl.org/R1.2/cfssl_linux-amd64"
+      dest: "/tmp/cfssl_linux-amd64"
+    - url: "https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64"
+      dest: "/tmp/cfssljson_linux-amd64"
+
+- name: Ensure cfssl programs copied to bin dir
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    remote_src: yes
+    mode: "0775"
+  with_items:
+    - src: "/tmp/cfssl_linux-amd64"
+      dest: "/usr/local/bin/cfssl"
+    - src: "/tmp/cfssljson_linux-amd64"
+      dest: "/usr/local/bin/cfssljson"
+
+- name: Template files
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - src: "ca-config.json"
+      dest: "/tmp/ca-config.json"
+    - src: "ca-csr.json"
+      dest: "/tmp/ca-csr.json"
+    - src: "kubernetes-csr.json"
+      dest: "/tmp/kubernetes-csr.json"
+
+- name: Create CA and private key
+  shell: "/usr/local/bin/cfssl gencert -initca ca-csr.json | /usr/local/bin/cfssljson -bare ca"
+  args:
+    chdir: "/tmp"
+    creates: "/tmp/ca-key.pem"
+
+- name: Generate kubernetes Cert
+  shell: |
+    /usr/local/bin/cfssl gencert \
+    -ca=ca.pem \
+    -ca-key=ca-key.pem \
+    -config=ca-config.json \
+    -profile=kubernetes \
+    kubernetes-csr.json | cfssljson -bare kubernetes
+  args:
+    chdir: /tmp
+    creates: /tmp/kubernetes-key.pem
+
+- name: Copy certs to apache2 public dir
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "0777"
+    remote_src: yes
+  with_items:
+    - src: "/tmp/ca.pem"
+      dest: "/var/www/html/ca.pem"
+    - src: "/tmp/kubernetes.pem"
+      dest: "/var/www/html/kubernetes.pem"
+    - src: "/tmp/kubernetes-key.pem"
+      dest: "/var/www/html/kubernetes-key.pem"
+
+- name: Ensure apache2 started
+  service:
+    name: apache2
+    state: started

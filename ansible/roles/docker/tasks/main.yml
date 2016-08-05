@@ -1,0 +1,56 @@
+---
+
+- name: Ensure dirs created
+  file:
+    dest: "{{ item.dest }}"
+    state: directory
+    recurse: yes
+  with_items:
+    - dest: "/opt/docker"
+    - dest: "/opt/docker/docker-{{ docker_version }}"
+    - dest: "{{ docker_bin_dir }}"
+    - dest: "/etc/systemd/system"
+
+- name: Download Docker {{ docker_version }} tarball
+  get_url:
+    url: "https://get.docker.com/builds/Linux/x86_64/docker-{{ docker_version }}.tgz"
+    dest: "/opt/docker/docker-{{ docker_version }}.tgz"
+
+- name: Unarchive docker {{ docker_version }} tarball
+  unarchive:
+    src: "/opt/docker/docker-{{ docker_version }}.tgz"
+    dest: "/opt/docker/docker-{{ docker_version }}"
+    copy: no
+
+- name: Symlink docker binaries
+  file:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    state: link
+  with_items:
+    - src: "/opt/docker/docker-{{ docker_version }}/docker/docker"
+      dest: "{{ docker_bin_dir }}/docker"
+    - src: "/opt/docker/docker-{{ docker_version }}/docker/docker-containerd"
+      dest: "{{ docker_bin_dir }}/docker-containerd"
+    - src: "/opt/docker/docker-{{ docker_version }}/docker/docker-containerd-ctr"
+      dest: "{{ docker_bin_dir }}/docker-containerd-ctr"
+    - src: "/opt/docker/docker-{{ docker_version }}/docker/docker-containerd-shim"
+      dest: "{{ docker_bin_dir }}/docker-containerd-shim"
+    - src: "/opt/docker/docker-{{ docker_version }}/docker/docker-runc"
+      dest: "{{ docker_bin_dir }}/docker-runc"
+
+- name: Template docker service
+  register: template_docker_service
+  template:
+    src: "etc/systemd/system/docker.service"
+    dest: "/etc/systemd/system/docker.service"
+
+- name: Systemctl daemon-reload
+  when: template_docker_service|changed
+  shell: systemctl daemon-reload
+
+- name: Ensure Docker service started
+  service:
+    name: docker
+    state: started
+    enabled: yes

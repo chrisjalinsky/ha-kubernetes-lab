@@ -1,0 +1,91 @@
+---
+
+- name: Ensure dirs created
+  file:
+    dest: "{{ item.dest }}"
+    state: directory
+    recurse: yes
+  with_items:
+    - dest: "/var/lib/kubelet"
+    - dest: "/var/lib/kubernetes"
+    - dest: "/etc/systemd/system"
+    - dest: "/opt/cni"
+    - dest: "/opt/cni/bin"
+    - dest: "/opt/kubernetes/{{ k8s_worker_version }}"
+    - dest: "/opt/kubernetes/{{ k8s_worker_version }}/bin"
+    - dest: "{{ k8s_worker_bin_dir }}"
+
+- name: Ensure {{ k8s_worker_version }} worker binaries are downloaded
+  get_url:
+    url: "{{ item.url }}"
+    dest: "{{ item.dest }}"
+    mode: "0777"
+  with_items:
+    - url: "https://storage.googleapis.com/kubernetes-release/release/{{ k8s_worker_version }}/bin/linux/amd64/kubectl"
+      dest: "/opt/kubernetes/{{ k8s_worker_version }}/bin/kubectl"
+    - url: "https://storage.googleapis.com/kubernetes-release/release/{{ k8s_worker_version }}/bin/linux/amd64/kube-proxy"
+      dest: "/opt/kubernetes/{{ k8s_worker_version }}/bin/kube-proxy"
+    - url: "https://storage.googleapis.com/kubernetes-release/release/{{ k8s_worker_version }}/bin/linux/amd64/kubelet"
+      dest: "/opt/kubernetes/{{ k8s_worker_version }}/bin/kubelet"
+
+- name: Ensure cni binaries are downloaded
+  get_url:
+    url: "{{ item.url }}"
+    dest: "{{ item.dest }}"
+    mode: "0777"
+  with_items:
+    - url: "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-c864f0e1ea73719b8f4582402b0847064f9883b0.tar.gz"
+      dest: "/tmp/cni-c864f0e1ea73719b8f4582402b0847064f9883b0.tar.gz"
+
+- name: Unarchive cni tarball
+  unarchive:
+    src: "/tmp/cni-c864f0e1ea73719b8f4582402b0847064f9883b0.tar.gz"
+    dest: "/opt/cni/"
+    copy: no
+
+- name: Ensure kube binaries are symlinked
+  file:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    state: link
+  with_items:
+    - src: "/opt/kubernetes/{{ k8s_worker_version }}/bin/kubectl"
+      dest: "{{ k8s_worker_bin_dir }}/kubectl"
+    - src: "/opt/kubernetes/{{ k8s_worker_version }}/bin/kube-proxy"
+      dest: "{{ k8s_worker_bin_dir }}/kube-proxy"
+    - src: "/opt/kubernetes/{{ k8s_worker_version }}/bin/kubelet"
+      dest: "{{ k8s_worker_bin_dir }}/kubelet"
+
+- name: Template kubeconfig
+  register: kube_conf
+  template:
+    src: "var/lib/kubelet/kubeconfig"
+    dest: "/var/lib/kubelet/kubeconfig"
+  notify:
+    - restart kubelet
+
+- name: Template systemd service files
+  register: kube_templates
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - src: "etc/systemd/system/kubelet.service"
+      dest: "/etc/systemd/system/kubelet.service"
+    - src: "etc/systemd/system/kube-proxy.service"
+      dest: "/etc/systemd/system/kube-proxy.service"
+  notify:
+    - restart kubelet
+
+- name: systemctl daemon reload when templates change
+  when: kube_templates|changed
+  shell: systemctl daemon-reload
+
+- name: Systemd services start
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  with_items:
+    - "kubelet"
+    - "kube-proxy"

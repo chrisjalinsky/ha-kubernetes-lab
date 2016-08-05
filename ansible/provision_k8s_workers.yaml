@@ -1,0 +1,9 @@
+---
+
+- name: Provision K8s worker servers
+  hosts: worker_servers
+  become: yes
+  become_user: root
+  roles:
+    - role: docker
+    - role: k8s_worker

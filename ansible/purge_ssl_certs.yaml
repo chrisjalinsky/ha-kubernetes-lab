@@ -1,0 +1,40 @@
+---
+
+- name: Download certs from Cloudflare pki server on etcd servers
+  hosts: etcd_servers
+  become: yes
+  become_user: root
+  tasks:
+    - name: Create SSL dir
+      file:
+        dest: "/etc/etcd"
+        state: directory
+
+    - name: Purge SSL certs and keys
+      file:
+        dest: "{{ item.dest }}"
+        state: absent
+      with_items:
+        - dest: "/etc/etcd/kubernetes.pem"
+        - dest: "/etc/etcd/kubernetes-key.pem"
+        - dest: "/etc/etcd/ca.pem"
+
+- name: Download certs from Cloudflare pki server on controller servers
+  hosts: controller_servers
+  become: yes
+  become_user: root
+  tasks:
+    - name: Create SSL dir
+      file:
+        dest: "/var/lib/kubernetes"
+        recurse: yes
+        state: directory
+
+    - name: Purge SSL certs and keys
+      file:
+        dest: "{{ item.dest }}"
+        state: absent
+      with_items:
+        - dest: "/var/lib/kubernetes/kubernetes.pem"
+        - dest: "/var/lib/kubernetes/kubernetes-key.pem"
+        - dest: "/var/lib/kubernetes/ca.pem"

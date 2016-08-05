@@ -1,0 +1,13 @@
+---
+
+haproxy_cfg_api_servers:
+  - alias: "controller0.lan"
+    ip: "10.240.0.20"
+  - alias: "controller1.lan"
+    ip: "10.240.0.21"
+  - alias: "controller2.lan"
+    ip: "10.240.0.22"
+
+haproxy_cfg_api_bind_ip: "*"
+haproxy_cfg_api_bind_port: "443"
+haproxy_cfg_api_server_port: "8080"

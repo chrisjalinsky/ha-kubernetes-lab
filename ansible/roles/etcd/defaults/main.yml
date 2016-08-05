@@ -1,0 +1,14 @@
+---
+
+etcd_name: "{{ inventory_hostname }}"
+etcd_certfile: "/etc/etcd/kubernetes.pem"
+etcd_keyfile: "/etc/etcd/kubernetes-key.pem"
+etcd_peer_certfile: "/etc/etcd/kubernetes.pem"
+etcd_peer_keyfile: "/etc/etcd/kubernetes-key.pem"
+etcd_trusted_cafile: "/etc/etcd/ca.pem"
+etcd_peer_trusted_cafile: "/etc/etcd/ca.pem"
+etcd_datadir: "/var/lib/etcd"
+etcd_initial_cluster: "etcd0.lan=https://10.240.0.10:2380,etcd1.lan=https://10.240.0.11:2380,etcd2.lan=https://10.240.0.12:2380"
+etcd_initial_cluster_token: "etcd-cluster-0"
+etcd_initial_cluster_state: "new"
+etcd_internal_ip: "{{ hostvars[inventory_hostname]['ansible_enp0s8']['ipv4']['address'] }}"

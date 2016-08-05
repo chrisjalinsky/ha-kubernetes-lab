@@ -1,0 +1,22 @@
+---
+
+- name: Update resolv.conf to point to new bind9 servers
+  hosts: all
+  become: yes
+  become_user: root
+  tasks:
+    - name: Replace nameserver line
+      lineinfile:
+        dest: "/etc/resolv.conf"
+        regexp: "^nameserver.*"
+        line: "nameserver 10.240.0.2"
+      tags:
+        - resolvconf
+
+    - name: Replace search line
+      lineinfile:
+        dest: "/etc/resolv.conf"
+        regexp: "^search.*"
+        line: "search lan"
+      tags:
+        - resolvconf

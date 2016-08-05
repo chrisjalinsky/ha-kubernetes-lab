@@ -1,0 +1,8 @@
+---
+
+- name: Provision Etcd Cluster
+  hosts: etcd_servers
+  become: yes
+  become_user: root
+  roles:
+    - role: etcd

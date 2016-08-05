@@ -1,0 +1,53 @@
+---
+
+core_servers:
+  hosts: [ core1.lan ]
+  vars:
+    ansible_ssh_user: vagrant
+    ansible_ssh_private_key_file: "~/.vagrant.d/insecure_private_key"
+controller_servers:
+  hosts: [ controller0.lan, controller1.lan, controller2.lan ]
+  vars:
+    ansible_ssh_user: vagrant
+    ansible_ssh_private_key_file: "~/.vagrant.d/insecure_private_key"
+etcd_servers:
+  hosts: [ etcd0.lan, etcd1.lan, etcd2.lan ]
+  vars:
+    ansible_ssh_user: vagrant
+    ansible_ssh_private_key_file: "~/.vagrant.d/insecure_private_key"
+worker_servers:
+  hosts: [ worker0.lan, worker1.lan, worker2.lan ]
+  vars:
+    ansible_ssh_user: vagrant
+    ansible_ssh_private_key_file: "~/.vagrant.d/insecure_private_key"
+lb_servers:
+  hosts: [ k8slb0.lan ]
+  vars:
+    ansible_ssh_user: vagrant
+    ansible_ssh_private_key_file: "~/.vagrant.d/insecure_private_key"
+all:
+  children: [ core_servers, controller_servers, etcd_servers, worker_servers, lb_servers ]
+_meta:
+  hostvars:
+    core1.lan:
+      vagrant_ip: "10.240.0.2"
+    etcd0.lan:
+      vagrant_ip: "10.240.0.10"
+    etcd1.lan:
+      vagrant_ip: "10.240.0.11"
+    etcd2.lan:
+      vagrant_ip: "10.240.0.12"
+    controller0.lan:
+      vagrant_ip: "10.240.0.20"
+    controller1.lan:
+      vagrant_ip: "10.240.0.21"
+    controller2.lan:
+      vagrant_ip: "10.240.0.22"
+    worker0.lan:
+      vagrant_ip: "10.240.0.30"
+    worker1.lan:
+      vagrant_ip: "10.240.0.31"
+    worker2.lan:
+      vagrant_ip: "10.240.0.32"
+    k8slb0.lan:
+      vagrant_ip: "10.240.0.50"

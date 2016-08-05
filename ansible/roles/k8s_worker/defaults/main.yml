@@ -1,0 +1,16 @@
+---
+
+k8s_worker_version: "v1.3.0"
+k8s_worker_bin_dir: "/usr/bin"
+k8s_worker_internal_ip: "{{ hostvars[inventory_hostname]['ansible_enp0s8']['ipv4']['address'] }}"
+k8s_worker_api_servers: "https://10.240.0.50"
+# For GCE style lb
+#k8s_worker_api_servers: "https://10.240.0.20:6443,https://10.240.0.21:6443,https://10.240.0.22:6443"
+k8s_worker_cluster_dns: "10.32.0.10"
+k8s_worker_cluster_domain: "cluster.local"
+k8s_worker_kubeconfig: "/var/lib/kubelet/kubeconfig"
+k8s_worker_tls_certfile: "/var/lib/kubernetes/kubernetes.pem"
+k8s_worker_tls_private_keyfile: "/var/lib/kubernetes/kubernetes-key.pem"
+k8s_worker_master: "https://10.240.0.50"
+# GCE lb
+#k8s_worker_master: "https://10.240.0.20:6443"

@@ -1,0 +1,75 @@
+---
+
+- name: Ensure dirs created
+  file:
+    dest: "{{ item.dest }}"
+    state: directory
+    recurse: yes
+  with_items:
+    - dest: "/var/lib/kubernetes"
+    - dest: "/etc/systemd/system"
+    - dest: "/opt/kubernetes/{{ k8s_controller_version }}"
+    - dest: "/opt/kubernetes/{{ k8s_controller_version }}/bin"
+    - dest: "{{ k8s_controller_bin_dir }}"
+
+- name: Ensure {{ k8s_controller_version }} binaries are downloaded
+  get_url:
+    url: "{{ item.url }}"
+    dest: "{{ item.dest }}"
+    mode: "0777"
+  with_items:
+    - url: "https://storage.googleapis.com/kubernetes-release/release/{{ k8s_controller_version }}/bin/linux/amd64/kube-apiserver"
+      dest: "/opt/kubernetes/{{ k8s_controller_version }}/bin/kube-apiserver"
+    - url: "https://storage.googleapis.com/kubernetes-release/release/{{ k8s_controller_version }}/bin/linux/amd64/kube-controller-manager"
+      dest: "/opt/kubernetes/{{ k8s_controller_version }}/bin/kube-controller-manager"
+    - url: "https://storage.googleapis.com/kubernetes-release/release/{{ k8s_controller_version }}/bin/linux/amd64/kube-scheduler"
+      dest: "/opt/kubernetes/{{ k8s_controller_version }}/bin/kube-scheduler"
+    - url: "https://storage.googleapis.com/kubernetes-release/release/{{ k8s_controller_version }}/bin/linux/amd64/kubectl"
+      dest: "/opt/kubernetes/{{ k8s_controller_version }}/bin/kubectl"
+
+- name: Ensure kube binaries are symlinked
+  file:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    state: link
+  with_items:
+    - src: "/opt/kubernetes/{{ k8s_controller_version }}/bin/kube-apiserver"
+      dest: "{{ k8s_controller_bin_dir }}/kube-apiserver"
+    - src: "/opt/kubernetes/{{ k8s_controller_version }}/bin/kube-controller-manager"
+      dest: "{{ k8s_controller_bin_dir }}/kube-controller-manager"
+    - src: "/opt/kubernetes/{{ k8s_controller_version }}/bin/kube-scheduler"
+      dest: "{{ k8s_controller_bin_dir }}/kube-scheduler"
+    - src: "/opt/kubernetes/{{ k8s_controller_version }}/bin/kubectl"
+      dest: "{{ k8s_controller_bin_dir }}/kubectl"
+
+
+- name: Template kube-apiserver systemd service file
+  register: kube_templates
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - src: "etc/systemd/system/kube-apiserver.service"
+      dest: "/etc/systemd/system/kube-apiserver.service"
+    - src: "etc/systemd/system/kube-controller-manager.service"
+      dest: "/etc/systemd/system/kube-controller-manager.service"
+    - src: "etc/systemd/system/kube-scheduler.service"
+      dest: "/etc/systemd/system/kube-scheduler.service"
+    - src: "var/lib/kubernetes/authorization-policy.jsonl"
+      dest: "/var/lib/kubernetes/authorization-policy.jsonl"
+    - src: "var/lib/kubernetes/token.csv"
+      dest: "/var/lib/kubernetes/token.csv"
+
+- name: systemctl daemon reload when templates change
+  when: kube_templates|changed
+  shell: systemctl daemon-reload
+
+- name: Systemd services start
+  service:
+    name: "{{ item }}"
+    enabled: yes
+    state: started
+  with_items:
+    - "kube-apiserver"
+    - "kube-controller-manager"
+    - "kube-scheduler"

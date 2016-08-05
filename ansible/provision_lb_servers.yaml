@@ -1,0 +1,8 @@
+---
+
+- name: provision core servers
+  hosts: lb_servers
+  become: yes
+  become_user: root
+  roles:
+    - role: haproxy

@@ -1,0 +1,8 @@
+---
+
+- name: Provision K8s controllers
+  hosts: controller_servers
+  become: yes
+  become_user: root
+  roles:
+    - role: k8s_controller

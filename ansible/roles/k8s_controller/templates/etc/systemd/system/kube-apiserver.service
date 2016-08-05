@@ -1,0 +1,30 @@
+[Unit]
+Description=Kubernetes API Server
+Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+
+[Service]
+ExecStart=/usr/bin/kube-apiserver \
+  --admission-control=NamespaceLifecycle,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota \
+  --advertise-address={{ k8s_controller_internal_ip }} \
+  --allow-privileged=true \
+  --apiserver-count=3 \
+  --authorization-mode=ABAC \
+  --authorization-policy-file={{ k8s_controller_authorization_policyfile }} \
+  --bind-address=0.0.0.0 \
+  --enable-swagger-ui=true \
+  --etcd-cafile={{ k8s_controller_etcd_cafile }} \
+  --insecure-bind-address=0.0.0.0 \
+  --kubelet-certificate-authority={{ k8s_controller_kubelet_ca }} \
+  --etcd-servers={{ k8s_controller_etcd_servers }} \
+  --service-account-key-file={{ k8s_controller_service_account_keyfile }} \
+  --service-cluster-ip-range={{ k8s_controller_service_account_ip_range }} \
+  --service-node-port-range={{ k8s_controller_service_service_node_port_range }} \
+  --tls-cert-file={{ k8s_controller_tls_certfile }} \
+  --tls-private-key-file={{ k8s_controller_tls_private_keyfile }} \
+  --token-auth-file={{ k8s_controller_token_authfile }} \
+  --v=2
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

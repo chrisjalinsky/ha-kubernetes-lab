@@ -1,0 +1,30 @@
+---
+
+- name: provision core servers
+  hosts: core_servers
+  become: yes
+  become_user: root
+  roles:
+    - role: bind9
+      bind9_type: master
+      bind9_listen: "{{ hostvars[inventory_hostname]['ansible_enp0s8']['ipv4']['address'] }}"
+      bind9_named_allow_transfer: "any"
+      bind9_named_forwarders:
+        - "8.8.8.8"
+        - "8.8.4.4"
+      bind9_named_forward_zones:
+        - name: "lan"
+          path: "/etc/bind/zones/master"
+          file: "db.lan"
+          hosts:
+            - 10.0.0.200
+      bind9_named_reverse_zones:
+        - name: "240.10.in-addr.arpa"
+          path: "/etc/bind/zones/master"
+          file: "db.240.10"
+          hosts:
+            - 10.0.0.200
+      bind9_named_acls:
+        - name: trusted
+          allowed:
+            - "10.240.0.0/16"

@@ -1,0 +1,25 @@
+---
+
+- name: Add ppa for haproxy
+  apt_repository:
+    repo: "ppa:vbernat/haproxy-1.6"
+    update_cache: yes
+
+- name: Install haproxy
+  apt:
+    name: "haproxy"
+    update_cache: yes
+    cache_valid_time: 3600 
+
+- name: Template haproxy cfg
+  template:
+    src: "etc/haproxy/haproxy.cfg"
+    dest: "/etc/haproxy/haproxy.cfg"
+  notify:
+    - restart haproxy
+
+- name: Start haproxy
+  service:
+    name: haproxy
+    state: started
+    enabled: yes
