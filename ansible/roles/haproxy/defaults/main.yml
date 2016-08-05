@@ -10,4 +10,5 @@ haproxy_cfg_api_servers:
 
 haproxy_cfg_api_bind_ip: "*"
 haproxy_cfg_api_bind_port: "443"
-haproxy_cfg_api_server_port: "8080"
+haproxy_cfg_api_server_port: "6443"
+haproxy_cfg_api_check_port: "8080"

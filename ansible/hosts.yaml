@@ -16,7 +16,7 @@ etcd_servers:
     ansible_ssh_user: vagrant
     ansible_ssh_private_key_file: "~/.vagrant.d/insecure_private_key"
 worker_servers:
-  hosts: [ worker0.lan, worker1.lan, worker2.lan ]
+  hosts: [ worker0.lan ]
   vars:
     ansible_ssh_user: vagrant
     ansible_ssh_private_key_file: "~/.vagrant.d/insecure_private_key"
@@ -31,12 +31,16 @@ _meta:
   hostvars:
     core1.lan:
       vagrant_ip: "10.240.0.2"
+      vagrant_mem: "1024"
     etcd0.lan:
       vagrant_ip: "10.240.0.10"
+      vagrant_mem: "1024"
     etcd1.lan:
       vagrant_ip: "10.240.0.11"
+      vagrant_mem: "1024"
     etcd2.lan:
       vagrant_ip: "10.240.0.12"
+      vagrant_mem: "1024"
     controller0.lan:
       vagrant_ip: "10.240.0.20"
     controller1.lan:
@@ -51,3 +55,4 @@ _meta:
       vagrant_ip: "10.240.0.32"
     k8slb0.lan:
       vagrant_ip: "10.240.0.50"
+      vagrant_mem: "1024"

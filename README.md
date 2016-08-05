@@ -8,7 +8,7 @@ The following environment creates a HA Kubernetes cluster (1 bind9 DNS server, 3
 
 ###Dependencies:
 * Ansible >= 2.0
-* Vagrant >= 1.8.1
+* Vagrant >= 1.8.5
 * Virtualbox >= 5.0
 
 You probably only need to have Ansible installed to get this environment up and running. Esp. if you are deploying to bare-metal or another hypervisor. You'll have to create a simple inventory file. Look at ansible/static_inventory to see what groups the playbooks use.
@@ -80,3 +80,29 @@ Purge the certificates
 ```
 ansible-playbook purge_ssl_certs.yaml -i inventory.py
 ```
+
+###etcd3
+
+Check cluster health on etcd servers
+```
+etcdctl --ca-file=/etc/etcd/ca.pem cluster-health
+```
+###K8s Controller servers
+```
+kubectl get componentstatuses
+```
+
+###k8s Worker servers
+
+Get pod names
+```
+root@worker0:/home/vagrant# kubectl --namespace=kube-system get pods
+NAME                 READY     STATUS    RESTARTS   AGE
+kube-dns-v18-bd9z8   2/3       Running   0          33s
+kube-dns-v18-tnt4r   2/3       Running   0          33s
+```
+Check resolv in pods
+```
+kubectl --namespace=kube-system exec kube-dns-v18-tnt4r -c kubedns -- cat /etc/resolv.conf
+```
+
