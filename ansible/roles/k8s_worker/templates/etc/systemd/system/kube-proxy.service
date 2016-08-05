@@ -4,10 +4,11 @@ Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 
 [Service]
 ExecStart=/usr/bin/kube-proxy \
+  --bind-address={{ k8s_worker_internal_ip }} \
   --master={{ k8s_worker_master }} \
   --kubeconfig={{ k8s_worker_kubeconfig }} \
   --proxy-mode=iptables \
-  --v=2
+  --v=5
 
 Restart=on-failure
 RestartSec=5

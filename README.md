@@ -94,15 +94,64 @@ kubectl get componentstatuses
 
 ###k8s Worker servers
 
-Get pod names
+NOTE: DNS is not functional at the moment. See below.
+
+Let's begin a test of the k8s functionality before adding kubeDNS.
+
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+  selector:
+    app: nginx
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: nginx
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      nodeName: worker0
+      containers:
+      - name: nginx
+        image: gcr.io/google_containers/nginx
+        ports:
+        - containerPort: 80
+```
+
+###KubeDNS svc and rc
+
+The kubedns containers have forwarding issues here. The pods aren't assigned endpoints and kcontinually crash. The logs seem to point to iptables and DNS resolution issues.
+
+To begin troubleshooting the kubeDNS on bare metal, create the svc and rc:
+```
+kubectl create -f https://raw.githubusercontent.com/kelseyhightower/kubernetes-the-hard-way/master/skydns-svc.yaml
+kubectl create -f https://raw.githubusercontent.com/kelseyhightower/kubernetes-the-hard-way/master/skydns-rc.yaml
+```
+
+Get pod names:
 ```
 root@worker0:/home/vagrant# kubectl --namespace=kube-system get pods
 NAME                 READY     STATUS    RESTARTS   AGE
 kube-dns-v18-bd9z8   2/3       Running   0          33s
 kube-dns-v18-tnt4r   2/3       Running   0          33s
 ```
-Check resolv in pods
+
+Check resolv in pods:
 ```
 kubectl --namespace=kube-system exec kube-dns-v18-tnt4r -c kubedns -- cat /etc/resolv.conf
 ```
+
 

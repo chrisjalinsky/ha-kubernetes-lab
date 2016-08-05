@@ -20,7 +20,7 @@ ExecStart=/usr/bin/kubelet \
   --serialize-image-pulls=false \
   --tls-cert-file={{ k8s_worker_tls_certfile }} \
   --tls-private-key-file={{ k8s_worker_tls_private_keyfile }} \
-  --v=2
+  --v=5
 
 Restart=on-failure
 RestartSec=5
