@@ -1,0 +1,14 @@
+[core_servers]
+core1.lan
+
+[controller_servers]
+controller[0:2].lan
+
+[etcd_servers]
+etcd[0:2].lan
+
+[worker_servers]
+worker[0:2].lan
+
+[lb_servers]
+k8slb0.lan
