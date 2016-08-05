@@ -19,12 +19,11 @@ echo "Beginning Installation at $(date)."
 
 run_playbook provision_core_servers.yaml inventory.py install.out
 run_playbook update_resolv.yaml inventory.py install.out
-run_playbook create_ssl_certs.yaml inventory.py install.out
-run_playbook download_certs.yaml install.out
-run_playbook provision_etcd_servers.yaml install.out
-run_playbook provision_k8s_controllers.yaml install.out
-run_playbook provision_k8s_workers.yaml install.out
-run_playbook provision_lb_servers.yaml install.out
-
+run_playbook create_and_expose_ssl_certs.yaml inventory.py install.out
+run_playbook download_certs.yaml inventory.py install.out
+run_playbook provision_etcd_servers.yaml inventory.py install.out
+run_playbook provision_k8s_controllers.yaml inventory.py install.out
+run_playbook provision_k8s_workers.yaml inventory.py install.out
+run_playbook provision_lb_servers.yaml inventory.py install.out
 
 echo "Ending Installation at $(date)."

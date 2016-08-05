@@ -1,7 +1,7 @@
 HA Kubernetes Lab
 ===================
 
-The following environment creates a HA Kubernetes cluster (3 k8s controllers, 3 k8s workers, 3 etcd3 hosts, 1 haProxy LB) onto bare metal servers running Ubuntu 16.04. This is currently implemented with 10 Virtualbox VMs, but should cover different scenarios. This use case is for building a local HA Kubernetes cluster onto bare metal servers.
+The following environment creates a HA Kubernetes cluster (1 bind9 DNS server, 3 k8s controllers, 3 k8s workers, 3 etcd3 hosts, 1 haProxy LB) onto bare metal servers running Ubuntu 16.04. This is implemented with Virtualbox VMs, but should cover different scenarios. This use case is for building a local HA Kubernetes cluster onto bare metal servers.
 
 ###Overview:
 * Create hosts based on Kelsey Hightowers guide [here:] (https://github.com/kelseyhightower/kubernetes-the-hard-way)
@@ -48,7 +48,7 @@ ansible-playbook update_resolv.yaml -i inventory.py
 
 Create and serve SSL certs with Apache (This is not secure, but is useful to easily share certs)
 ```
-ansible-playbook create_ssl_certs.yaml -i inventory.py
+ansible-playbook create_and_expose_ssl_certs.yaml -i inventory.py
 ```
 
 Download SSL certs (This cluster utilizes TLS, ABAC, Token Auth, therefore here we download the exposed certs.)
@@ -74,4 +74,9 @@ ansible-playbook provision_k8s_workers.yaml -i inventory.py
 Install haproxy LBs (This takes the place of the GCE frontend utilized in the GCE LB)
 ```
 ansible-playbook provision_lb_servers.yaml -i inventory.py
+```
+
+Purge the certificates
+```
+ansible-playbook purge_ssl_certs.yaml -i inventory.py
 ```

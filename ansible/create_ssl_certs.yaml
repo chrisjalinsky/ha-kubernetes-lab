@@ -1,8 +1,0 @@
----
-
-- name: Create SSL certs with Cloudflare PKI toolset
-  hosts: core_servers
-  become: yes
-  become_user: root
-  roles:
-    - role: cloudflare_pki
