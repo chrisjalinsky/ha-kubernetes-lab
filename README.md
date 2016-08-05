@@ -1,12 +1,11 @@
-CoreOS PXE Boot Environment
+HA Kubernetes Lab
 ===================
 
-The following environment PXE boots a Kubernetes cluster (1 master, 2 nodes) onto bare metal servers. This is currently implemented with 3 Virtualbox VMs, but should cover different scenarios. This use case is for building a local Kubernetes cluster onto bare metal servers.
-
-Included is a custom Docker build web application that is exposed and load balanced on the local network. It will be pulling it's image from a private Docker Registry, which will be built as well.
+The following environment creates a HA Kubernetes cluster (3 masters, 3 nodes) onto bare metal servers running Ubuntu 16.04. This is currently implemented with 10 Virtualbox VMs, but should cover different scenarios. This use case is for building a local Kubernetes cluster onto bare metal servers.
 
 ###Overview:
 * Create hosts based on Kelsey Hightowers guide [here:] (https://github.com/kelseyhightower/kubernetes-the-hard-way)
+
 ###Dependencies:
 * Ansible >= 2.0
 * Vagrant >= 1.8.1
@@ -18,7 +17,7 @@ You probably only need to have Ansible installed to get this environment up and 
 Create Environment with Vagrant
 ===============================
 
-I use vagrant-hostsupdater plugin to write to my Macbook's /etc/hosts file for DNS resolution. This is so I can resolve hostnames in my browser. There is a playbook that installs DNS into the private network, as well as updates resolv.conf to utilize the newly created DNS server. You can skip these playbooks if your environment contains DNS resolution.
+I use vagrant-hostsupdater plugin to write to my /etc/hosts file for DNS resolution. This is so I can resolve hostnames in my browser. There is a playbook that installs DNS into the private network, as well as updates resolv.conf to utilize the newly created DNS server. You can skip these playbooks if your environment contains DNS resolution.
 ```
 vagrant up
 ```
