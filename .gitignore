@@ -1,3 +1,4 @@
 .DS_Store
 .vagrant
 ansible/install.out
+ansible/*.retry

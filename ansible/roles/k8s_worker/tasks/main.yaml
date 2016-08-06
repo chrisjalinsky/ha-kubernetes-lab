@@ -76,6 +76,7 @@
       dest: "/etc/systemd/system/kube-proxy.service"
   notify:
     - restart kubelet
+    - restart kubeproxy
 
 - name: systemctl daemon reload when templates change
   when: kube_templates|changed

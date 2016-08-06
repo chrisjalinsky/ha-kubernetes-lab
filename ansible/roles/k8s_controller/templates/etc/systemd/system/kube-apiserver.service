@@ -22,7 +22,7 @@ ExecStart=/usr/bin/kube-apiserver \
   --tls-cert-file={{ k8s_controller_tls_certfile }} \
   --tls-private-key-file={{ k8s_controller_tls_private_keyfile }} \
   --token-auth-file={{ k8s_controller_token_authfile }} \
-  --v=2
+  --v=5
 Restart=on-failure
 RestartSec=5
 
