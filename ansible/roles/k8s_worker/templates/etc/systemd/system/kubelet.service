@@ -6,7 +6,7 @@ Requires=docker.service
 
 [Service]
 ExecStart=/usr/bin/kubelet \
-  --address=0.0.0.0 \
+  --address={{ k8s_worker_internal_ip }} \
   --node-ip="{{ k8s_worker_internal_ip }}" \
   --allow-privileged=true \
   --api-servers={{ k8s_worker_api_servers }} \

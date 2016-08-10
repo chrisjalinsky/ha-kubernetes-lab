@@ -1,0 +1,19 @@
+---
+
+- name: Template Kube addons (DNS, Heapster, Dashboard)
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - src: "kubedns_svc.yaml.j2"
+      dest: "/var/lib/kubelet/kubedns_svc.yaml"
+    - src: "kubedns_rc.yaml.j2"
+      dest: "/var/lib/kubelet/kubedns_rc.yaml"
+    - src: "heapster_svc.yaml.j2"
+      dest: "/var/lib/kubelet/heapster_svc.yaml"
+    - src: "heapster_rc.yaml.j2"
+      dest: "/var/lib/kubelet/heapster_rc.yaml"
+    - src: "dash_svc.yaml.j2"
+      dest: "/var/lib/kubelet/dash_svc.yaml"
+    - src: "dash_rc.yaml.j2"
+      dest: "/var/lib/kubelet/dash_rc.yaml"

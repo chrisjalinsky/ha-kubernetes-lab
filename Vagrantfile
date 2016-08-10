@@ -12,7 +12,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   
   config.vm.box = "bento/ubuntu-16.04"
   config.ssh.insert_key = false
-#  config.vbguest.auto_update = false
+  
+  if Vagrant.has_plugin?("vagrant-vbguest")
+    config.vbguest.auto_update = false
+  end
 
   servers.each do |ansible_key,vars|
     vars["hosts"].each_with_index do |host,i|

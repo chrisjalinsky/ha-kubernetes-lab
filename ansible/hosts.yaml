@@ -37,18 +37,23 @@ _meta:
       vagrant_ip: "10.240.0.11"
     etcd2.lan:
       vagrant_ip: "10.240.0.12"
-      vagrant_mem: "1024"
     controller0.lan:
       vagrant_ip: "10.240.0.20"
+      vagrant_mem: "4096"
     controller1.lan:
       vagrant_ip: "10.240.0.21"
+      vagrant_mem: "4096"
     controller2.lan:
       vagrant_ip: "10.240.0.22"
+      vagrant_mem: "4096"
     worker0.lan:
       vagrant_ip: "10.240.0.30"
+      vagrant_mem: "4096"
     worker1.lan:
       vagrant_ip: "10.240.0.31"
+      vagrant_mem: "4096"
     worker2.lan:
       vagrant_ip: "10.240.0.32"
+      vagrant_mem: "4096"
     k8slb0.lan:
       vagrant_ip: "10.240.0.50"

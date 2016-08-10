@@ -93,8 +93,22 @@ kubectl get componentstatuses
 ```
 
 ###k8s Worker servers
+export the KUBECONFIG var to use kubectl on the worker nodes.
+```
+export KUBECONFIG="/var/lib/kubelet/kubeconfig"
+```
 
-NOTE: DNS is not functional at the moment. See below.
+###CNI Networking setup
+As an alternative to Flannel, Calico, Weave, etc. K8s utilizes a CNI plugin networking solution [here](https://github.com/containernetworking/cni).
+
+Also we are utilizing the new K8s container runtime, which allows you to swap containerization at runtime. Therefore Docker does not need to be altered with an overlay network. We'll use basic L3 networking as a proof of concept.
+
+Add routes to the workers and controllers, depending on which host you are on, you will not want to alter the newly created kubernetes CNI cbr0 default route. This only affects the workers.
+```
+route add -net 10.200.0.0 netmask 255.255.255.0 gw 10.240.0.30
+route add -net 10.200.1.0 netmask 255.255.255.0 gw 10.240.0.31
+route add -net 10.200.2.0 netmask 255.255.255.0 gw 10.240.0.32
+```
 
 Let's begin a test of the k8s functionality before adding kubeDNS.
 
@@ -131,15 +145,16 @@ spec:
         - containerPort: 80
 ```
 
-###KubeDNS svc and rc
+###Kubernetes Addons (kubeDNS, Heapster, Dashboard)
 
-The kubedns containers have forwarding issues here. The pods aren't assigned endpoints and kcontinually crash. The logs seem to point to iptables and DNS resolution issues.
+To create the addons:
+```
+ansible-playbook provision_k8s_addons.yml -i inventory.py
+```
 
-To begin troubleshooting the kubeDNS on bare metal, create the svc and rc:
-```
-kubectl create -f https://raw.githubusercontent.com/kelseyhightower/kubernetes-the-hard-way/master/skydns-svc.yaml
-kubectl create -f https://raw.githubusercontent.com/kelseyhightower/kubernetes-the-hard-way/master/skydns-rc.yaml
-```
+The kubedns containers had forwarding issues. The pods weren't assigned endpoints and continually crashed. The logs seem to point to iptables and DNS resolution issues. Additionally I increased the memory to 4GB per node to solve the /readiness checks that kept returning 503 errors in the logs.
+
+While adding more memory and adding routing on the nodes seemed to fix the DNS issues I was experiencing, you can further troubleshoot the kubeDNS by checking resolv.conf and nslookups:
 
 Get pod names:
 ```
@@ -153,5 +168,11 @@ Check resolv in pods:
 ```
 kubectl --namespace=kube-system exec kube-dns-v18-tnt4r -c kubedns -- cat /etc/resolv.conf
 ```
+
+###Heapster
+This adds monitoring to the cluster. I simply copied the github cluster/addons into a role.
+
+###Kubernetes Dashboard
+I added a NodePort to the service so that I can reach the dashboard at port 30050 of the worker nodes.
 
 
