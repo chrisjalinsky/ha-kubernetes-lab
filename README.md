@@ -101,16 +101,21 @@ export KUBECONFIG="/var/lib/kubelet/kubeconfig"
 ###CNI Networking setup
 As an alternative to Flannel, Calico, Weave, etc. K8s utilizes a CNI plugin networking solution [here](https://github.com/containernetworking/cni).
 
-Also we are utilizing the new K8s container runtime, which allows you to swap containerization at runtime. Therefore Docker does not need to be altered with an overlay network. We'll use basic L3 networking as a proof of concept.
+Also we are utilizing CNI Plugin architecture with the kubelet process, which allows you to swap containerization at runtime. Therefore Docker does not need to be reconfigured with an overlay network. We'll use basic L3 networking as a proof of concept.
 
-Add routes to the workers and controllers, depending on which host you are on, you will not want to alter the newly created kubernetes CNI cbr0 default route. This only affects the workers.
+####L3 Routes
+Add routes to the workers and controllers, depending on which host you are on, you will not want to alter the newly created kubernetes CNI cbr0 default route. (This route isn't configured until services are created.) Otherwise, add the necessary routes to the cluster. Eventually I'll create network interface ansible playbooks for this, so that further HA and fail over can be achieved, i.e. NIC bonding.
 ```
 route add -net 10.200.0.0 netmask 255.255.255.0 gw 10.240.0.30
 route add -net 10.200.1.0 netmask 255.255.255.0 gw 10.240.0.31
 route add -net 10.200.2.0 netmask 255.255.255.0 gw 10.240.0.32
 ```
 
-Let's begin a test of the k8s functionality before adding kubeDNS.
+Let's begin a test of the k8s functionality before adding kubeDNS. Copy this config and
+```
+kubectl create -f <file>
+```
+Config:
 
 ```
 apiVersion: v1
