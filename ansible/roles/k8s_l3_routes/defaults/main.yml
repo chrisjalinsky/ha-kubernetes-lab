@@ -1,0 +1,7 @@
+---
+
+k8s_l3_routes_list: []
+#- name: "arbitrary name"
+#  net: "x.x.x.x"
+#  netmask: "255.255.255.0"
+#  gw: "x.x.x.x"

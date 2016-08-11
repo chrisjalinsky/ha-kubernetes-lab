@@ -1,0 +1,7 @@
+---
+
+- name: Ensure routes exist if present
+  when: k8s_l3_routes_list|length > 0
+  shell: "route add -net {{ item.net }} netmask {{ item.netmask }} gw {{ item.gw }}"
+  with_items: "{{ k8s_l3_routes_list }}"
+  ignore_errors: yes

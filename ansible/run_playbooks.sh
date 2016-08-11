@@ -25,5 +25,7 @@ run_playbook download_certs.yaml inventory.py install.out
 run_playbook provision_etcd_servers.yaml inventory.py install.out
 run_playbook provision_k8s_controllers.yaml inventory.py install.out
 run_playbook provision_k8s_workers.yaml inventory.py install.out
+run_playbook provision_k8s_l3_routes.yaml inventory.py install.out
+run_playbook provision_k8s_addons.yaml inventory.py install.out
 
 echo "Ending Installation at $(date)."

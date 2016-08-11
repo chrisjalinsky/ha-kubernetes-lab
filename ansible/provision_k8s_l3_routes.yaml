@@ -1,0 +1,11 @@
+---
+
+- name: Provision K8s L3 routes
+  hosts: controller_servers,worker_servers
+  become: yes
+  become_user: root
+  vars_files:
+    - "vars/makevault.yml"
+  roles:
+    - role: k8s_l3_routes
+      k8s_l3_routes_list: "{{ global_k8s_routes[inventory_hostname] }}"

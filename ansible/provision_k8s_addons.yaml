@@ -1,6 +1,6 @@
 ---
 
-- name: provision k8s addons
+- name: provision k8s addons on a single worker node
   hosts: worker_servers[0]
   become: yes
   become_user: root

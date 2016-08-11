@@ -1,0 +1,16 @@
+---
+
+k8s_addons_kubeconfig_path: "/var/lib/kubelet/kubeconfig"
+k8s_addons_template_list:
+  - src: "var/lib/kubelet/kubedns_svc.yaml.j2"
+    dest: "/var/lib/kubelet/kubedns_svc.yaml"
+  - src: "var/lib/kubelet/kubedns_rc.yaml.j2"
+    dest: "/var/lib/kubelet/kubedns_rc.yaml"
+  - src: "var/lib/kubelet/heapster_svc.yaml.j2"
+    dest: "/var/lib/kubelet/heapster_svc.yaml"
+  - src: "var/lib/kubelet/heapster_rc.yaml.j2"
+    dest: "/var/lib/kubelet/heapster_rc.yaml"
+  - src: "var/lib/kubelet/dash_svc.yaml.j2"
+    dest: "/var/lib/kubelet/dash_svc.yaml"
+  - src: "var/lib/kubelet/dash_rc.yaml.j2"
+    dest: "/var/lib/kubelet/dash_rc.yaml"

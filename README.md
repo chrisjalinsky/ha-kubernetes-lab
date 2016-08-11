@@ -3,6 +3,9 @@ HA Kubernetes Lab
 
 The following environment creates a HA Kubernetes cluster (1 bind9 DNS server, 3 k8s controllers, 3 k8s workers, 3 etcd3 hosts, 1 haProxy LB) onto bare metal servers running Ubuntu 16.04. This is implemented with Virtualbox VMs, but should cover different scenarios. This use case is for building a local HA Kubernetes cluster onto bare metal servers.
 
+NOTE: For demonstration and limited resources on a macbook pro with 16 GB memory, there is only 1 worker node, worker0.lan.
+Change the ansible/hosts.yaml ans/or static_inventory to include worker1.lan, and worker2.lan
+
 ###Overview:
 * Create hosts based on Kelsey Hightowers guide [here:] (https://github.com/kelseyhightower/kubernetes-the-hard-way)
 
@@ -35,48 +38,71 @@ cat ansible/hosts.yaml
 ansible/run_playbooks.sh
 ```
 ###Ansible playbooks overview:
+Below are the individual playbooks
 
+####Infrastructure DNS server
 Installs DNS in the environment, and is not necessary if DNS already exists
 ```
 ansible-playbook provision_core_servers.yaml -i inventory.py
 ```
 
+####Infrastructure DNS resolution
 Updates the cluster node's resolv.conf to point to the previous playbook's DNS server(s), this is not necessary if DNS resolution already exists
 ```
 ansible-playbook update_resolv.yaml -i inventory.py
 ```
 
-Create and serve SSL certs with Apache (This is not secure, but is useful to easily share certs)
-```
-ansible-playbook create_and_expose_ssl_certs.yaml -i inventory.py
-```
-
-Download SSL certs (This cluster utilizes TLS, ABAC, Token Auth, therefore here we download the exposed certs.)
-```
-ansible-playbook download_ssl_certs.yaml -i inventory.py
-```
-
-Install etcd3 (etcd3 with TLS)
-```
-ansible-playbook provision_etcd_servers.yaml -i inventory.py
-```
-
-Install k8s master controller servers (kube-apiserver, kube-controller-manager, kube-scheduler)
-```
-ansible-playbook provision_k8s_controllers.yaml -i inventory.py
-```
-
-Install k8s worker servers (kube-proxy, kubelet)
-```
-ansible-playbook provision_k8s_workers.yaml -i inventory.py
-```
-
+####Haproxy
 Install haproxy LBs (This takes the place of the GCE frontend utilized in the GCE LB)
 ```
 ansible-playbook provision_lb_servers.yaml -i inventory.py
 ```
 
-Purge the certificates
+####TLS Creation
+Create and serve SSL certs with Apache (This is not secure, but is useful to easily share certs)
+```
+ansible-playbook create_and_expose_ssl_certs.yaml -i inventory.py
+```
+
+####TLS Certs download
+Download SSL certs (This cluster utilizes TLS, ABAC, Token Auth, therefore here we download the exposed certs.)
+```
+ansible-playbook download_ssl_certs.yaml -i inventory.py
+```
+
+####Etcd3
+Install etcd3 (etcd3 with TLS)
+```
+ansible-playbook provision_etcd_servers.yaml -i inventory.py
+```
+
+####k8s controller nodes
+Install k8s master controller servers (kube-apiserver, kube-controller-manager, kube-scheduler)
+```
+ansible-playbook provision_k8s_controllers.yaml -i inventory.py
+```
+
+####k8s worker nodes
+Install k8s worker servers (kube-proxy, kubelet)
+```
+ansible-playbook provision_k8s_workers.yaml -i inventory.py
+```
+
+####Infrastructure L3 Routing
+The hosts need to resolve each other's k8s subnets, so we create routes on the hosts.
+NOTE: These routes are not persistent across reboots
+```
+ansible-playbook provision_k8s_l3_routes.yml -i inventory.py
+```
+
+####Kubernetes Addons (kubeDNS, Heapster, Dashboard)
+To create the addons k8s templates:
+```
+ansible-playbook provision_k8s_addons.yml -i inventory.py
+```
+
+####Remove TLS certs
+Purge the certificates if you need to build new TLS certs.
 ```
 ansible-playbook purge_ssl_certs.yaml -i inventory.py
 ```
@@ -111,7 +137,7 @@ route add -net 10.200.1.0 netmask 255.255.255.0 gw 10.240.0.31
 route add -net 10.200.2.0 netmask 255.255.255.0 gw 10.240.0.32
 ```
 
-Let's begin a test of the k8s functionality before adding kubeDNS. Copy this config and
+Let's begin a test of the k8s functionality
 ```
 kubectl create -f <file>
 ```
@@ -150,14 +176,9 @@ spec:
         - containerPort: 80
 ```
 
-###Kubernetes Addons (kubeDNS, Heapster, Dashboard)
+###KubeDNS
 
-To create the addons:
-```
-ansible-playbook provision_k8s_addons.yml -i inventory.py
-```
-
-The kubedns containers had forwarding issues. The pods weren't assigned endpoints and continually crashed. The logs seem to point to iptables and DNS resolution issues. Additionally I increased the memory to 4GB per node to solve the /readiness checks that kept returning 503 errors in the logs.
+The kubedns containers had forwarding issues. The pods weren't assigned endpoints and continually crashed. The logs seemed to point to iptables and DNS resolution issues. Additionally I increased the memory to 4GB per node to solve the /readiness checks that kept returning 503 errors in the logs.
 
 While adding more memory and adding routing on the nodes seemed to fix the DNS issues I was experiencing, you can further troubleshoot the kubeDNS by checking resolv.conf and nslookups:
 
@@ -179,5 +200,3 @@ This adds monitoring to the cluster. I simply copied the github cluster/addons i
 
 ###Kubernetes Dashboard
 I added a NodePort to the service so that I can reach the dashboard at port 30050 of the worker nodes.
-
-

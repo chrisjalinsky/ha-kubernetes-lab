@@ -1,6 +1,6 @@
 ---
 
-- name: provision core servers
+- name: provision lb servers
   hosts: lb_servers
   become: yes
   become_user: root

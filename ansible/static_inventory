@@ -8,7 +8,7 @@ controller[0:2].lan
 etcd[0:2].lan
 
 [worker_servers]
-worker[0:2].lan
+worker0.lan
 
 [lb_servers]
 k8slb0.lan

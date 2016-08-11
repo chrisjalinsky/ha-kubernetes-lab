@@ -4,16 +4,23 @@
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
-  with_items:
-    - src: "kubedns_svc.yaml.j2"
-      dest: "/var/lib/kubelet/kubedns_svc.yaml"
-    - src: "kubedns_rc.yaml.j2"
-      dest: "/var/lib/kubelet/kubedns_rc.yaml"
-    - src: "heapster_svc.yaml.j2"
-      dest: "/var/lib/kubelet/heapster_svc.yaml"
-    - src: "heapster_rc.yaml.j2"
-      dest: "/var/lib/kubelet/heapster_rc.yaml"
-    - src: "dash_svc.yaml.j2"
-      dest: "/var/lib/kubelet/dash_svc.yaml"
-    - src: "dash_rc.yaml.j2"
-      dest: "/var/lib/kubelet/dash_rc.yaml"
+  with_items: "{{ k8s_addons_template_list }}"
+
+- name: Test export KUBECONFIG env var and exec kubectl
+  shell: kubectl get nodes
+  register: kubectl_test_get_nodes
+  environment:
+    KUBECONFIG: "{{ k8s_addons_kubeconfig_path }}"
+
+- name: Debug kubectl_test_get_nodes
+  debug:
+    var: kubectl_test_get_nodes
+
+- name: Create addons from k8s_addons_template_list
+  when: kubectl_test_get_nodes.rc == 0
+  ignore_errors: yes
+  shell: "kubectl create -f {{ item.dest }}"
+  environment:
+    KUBECONFIG: "{{ k8s_addons_kubeconfig_path }}"
+  with_items: "{{ k8s_addons_template_list }}"
+  
