@@ -1,0 +1,82 @@
+---
+
+- name: Install apache2-utils for htpasswd
+  apt:
+    name: "{{ item }}"
+    update_cache: yes
+    cache_valid_time: 3600
+  with_items:
+    - "python-passlib"
+    - "apache2-utils"
+
+- name: Create certs, auth, and data directory
+  file:
+    state: directory
+    recurse: yes
+    dest: "{{ item }}"
+  with_items:
+    - "{{ docker_registry_nginx_dir }}"
+    - "{{ docker_registry_data_dir }}"
+    - "{{ docker_registry_ca_certs_dir }}"
+
+- name: Check for ssl cert expected to be in place on host
+  stat: path="{{ docker_registry_ssl_cert_location }}"
+  register: cert_stat
+
+- name: Check for ssl key expected to be in place on host
+  stat: path="{{ docker_registry_ssl_key_location }}"
+  register: key_stat
+
+- name: Existing ssl crt must exist
+  fail: msg="{{ docker_registry_ssl_cert_location }} must exist"
+  when: cert_stat.stat.exists is not defined
+
+- name: Existing ssl key must exist
+  fail: msg="{{ docker_registry_ssl_key_location }} must exist"
+  when: key_stat.stat.exists is not defined
+
+- name: Copy ssl cert and key into place
+  command: "cp {{ item.src }} {{ item.dest }}"
+  args:
+    creates: "{{ item.dest }}"
+  with_items:
+    - src: "{{ docker_registry_ssl_key_location }}"
+      dest: "{{ docker_registry_nginx_dir }}/{{ inventory_hostname }}.key"
+    - src: "{{ docker_registry_ssl_cert_location }}"
+      dest: "{{ docker_registry_nginx_dir }}/{{ inventory_hostname }}.crt"
+    - src: "{{ docker_registry_ssl_cert_location }}"
+      dest: "{{ docker_registry_ca_certs_dir }}/{{ inventory_hostname }}.crt"
+
+- name: Update CA certs
+  command: "/usr/sbin/update-ca-certificates"
+
+- name: Restart Docker when docker opts changes
+  service:
+    name: docker
+    state: restarted
+
+- name: Template files
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - src: "docker-compose.yml"
+      dest: "{{ docker_registry_home_dir }}/docker-compose.yml"
+    - src: "nginx/registry.conf"
+      dest: "{{ docker_registry_nginx_dir }}/registry.conf"
+    #- src: "etc/init/docker-registry.conf"
+    #  dest: "{{ docker_registry_upstart_script }}"
+
+- name: Add users to htpasswd
+  htpasswd:
+    path: "{{ docker_registry_nginx_dir }}/registry.password"
+    name: "{{ item.user }}"
+    password: "{{ item.password }}"
+  with_items: "{{ docker_registry_users }}"
+  no_log: yes
+
+#- name: Ensure Docker Registry is started
+#  service:
+#    name: docker-registry
+#    pattern: /etc/init/docker-registry
+#    state: started

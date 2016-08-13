@@ -1,0 +1,15 @@
+---
+
+- name: Provision Docker Registry servers
+  hosts: docker_registry_servers
+  become: yes
+  become_user: root
+  vars_files:
+    - vars/makevault.yml
+  roles:
+    - role: openssl
+      openssl_generator_complexity: 4096
+    - role: docker
+    - role: docker_compose
+    - role: docker_registry
+      docker_registry_users: "{{ global_authorized_registry_users }}"

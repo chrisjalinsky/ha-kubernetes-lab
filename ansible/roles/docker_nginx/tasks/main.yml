@@ -1,0 +1,24 @@
+---
+
+- name: Create {{ docker_nginx_templates_dir }} dir
+  file:
+    dest: "{{ docker_nginx_templates_dir }}"
+    state: directory
+
+- name: Template Hello Files
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - src: "hello/Dockerfile"
+      dest: "{{ docker_nginx_templates_dir }}/Dockerfile"
+    - src: "hello/hello.conf"
+      dest: "{{ docker_nginx_templates_dir }}/hello.conf"
+    - src: "hello/index.html"
+      dest: "{{ docker_nginx_templates_dir }}/index.html"
+
+- name: Build Docker Image
+  shell: "docker build -t {{ docker_nginx_image_tag }} ."
+  args:
+    chdir: "{{ docker_nginx_templates_dir }}"
+    

@@ -1,0 +1,9 @@
+---
+
+- name: provision custom Docker Nginx containers
+  hosts: docker_registry_servers
+  become: yes
+  become_user: root
+  roles:
+    - role: docker_nginx
+      docker_nginx_image_tag: "dreg0.lan/appweb:v1"

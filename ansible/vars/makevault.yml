@@ -1,5 +1,11 @@
 ---
 
+global_authorized_registry_users:
+  - user: tester
+    password: pw
+  - user: testuser
+    password: pass
+
 global_k8s_routes:
   "controller0.lan":
     - name: "worker0.lan"

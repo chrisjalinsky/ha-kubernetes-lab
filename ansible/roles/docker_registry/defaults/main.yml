@@ -1,0 +1,17 @@
+---
+docker_registry_home_dir: "/docker-registry"
+docker_registry_nginx_dir: "{{ docker_registry_home_dir }}/nginx"
+#docker_registry_certs_dir: "{{ docker_registry_home_dir }}/certs"
+#docker_registry_auth_dir: "{{ docker_registry_home_dir }}/auth"
+docker_registry_data_dir: "{{ docker_registry_home_dir }}/data"
+
+docker_registry_ca_certs_dir: "/usr/local/share/ca-certificates/{{ inventory_hostname }}"
+
+docker_registry_ssl_cert_location: "/etc/ssl/{{ inventory_hostname }}/{{ inventory_hostname }}.crt"
+docker_registry_ssl_key_location: "/etc/ssl/{{ inventory_hostname }}/{{ inventory_hostname }}.key"
+
+docker_registry_nginx_server_name: "{{ inventory_hostname }}"
+docker_registry_users: []
+
+docker_registry_upstart_dir: "/etc/init"
+docker_registry_upstart_script: "{{ docker_registry_upstart_dir }}/docker-registry.conf"

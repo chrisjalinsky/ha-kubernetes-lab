@@ -1,0 +1,16 @@
+nginx:
+  image: "nginx:1.9"
+  ports:
+    - 443:443
+  links:
+    - registry:registry
+  volumes:
+    - {{ docker_registry_nginx_dir }}/:/etc/nginx/conf.d:ro
+registry:
+  image: registry:2
+  ports:
+    - 127.0.0.1:5000:5000
+  environment:
+    REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /data
+  volumes:
+    - {{ docker_registry_data_dir }}:/data

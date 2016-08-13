@@ -1,0 +1,14 @@
+---
+- name: Register uname -s
+  command: "uname -s"
+  register: unames
+
+- name: Register uname -m
+  command: "uname -m"
+  register: unamem
+
+- name: Download docker-compose to usr/local/bin
+  get_url: 
+    url: "https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-{{ unames.stdout }}-{{ unamem.stdout }}"
+    dest: "/usr/local/bin/docker-compose"
+    mode: "0777"
