@@ -67,7 +67,7 @@ ansible-playbook create_and_expose_ssl_certs.yaml -i inventory.py
 ####TLS Certs download
 Download SSL certs (This cluster utilizes TLS, ABAC, Token Auth, therefore here we download the exposed certs.)
 ```
-ansible-playbook download_ssl_certs.yaml -i inventory.py
+ansible-playbook download_certs.yaml -i inventory.py
 ```
 
 ####Etcd3
