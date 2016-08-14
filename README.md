@@ -7,7 +7,7 @@ NOTE: For demonstration and limited resources on a macbook pro with 16 GB memory
 Change the ansible/hosts.yaml ans/or static_inventory to include worker1.lan, and worker2.lan
 
 ###Overview:
-* Create hosts based on Kelsey Hightowers guide [here:] (https://github.com/kelseyhightower/kubernetes-the-hard-way)
+* Create virtual hosts based on Kelsey Hightowers guide [here:] (https://github.com/kelseyhightower/kubernetes-the-hard-way) This is meant to be a bare metal guide, so that Google Cloud isn't necessary, and an on premises solution can be used.
 
 ###Dependencies:
 * Ansible >= 2.0
@@ -54,7 +54,7 @@ ansible-playbook update_resolv.yaml -i inventory.py
 ```
 
 ####Haproxy
-Install haproxy LBs (This takes the place of the GCE frontend utilized in the GCE LB)
+Install haproxy LBs (This takes the place of the GCE frontend utilized in the GCE LB). Using only one is a single point of failure. The solution is to provision multiple LBs and use keepalive.d Virtual IPs to ensure high availability, but is not implemented here.
 ```
 ansible-playbook provision_lb_servers.yaml -i inventory.py
 ```
