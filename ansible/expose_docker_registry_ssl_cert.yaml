@@ -1,6 +1,6 @@
 ---
 
-- name: Expose precreated docker cert for worker nodes
+- name: Expose precreated docker cert with Apache for worker nodes
   hosts: dreg0.lan
   become: yes
   become_user: root
@@ -8,49 +8,19 @@
     global_dreg_ssl_cert_dir: "/etc/ssl"
     global_dreg_apache_dir: "/var/www/html"
   tasks:
+    - name: Ensure Apache is present
+      apt:
+        name: apache2
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Ensure Apache is running
+      service:
+        name: apache2
+        state: started
+    
     - name: Copy {{ global_dreg_ssl_cert_dir }}/{{ inventory_hostname }}/{{ inventory_hostname }}.crt to {{ global_dreg_apache_dir }} apache dir
       copy:
         src: "{{ global_dreg_ssl_cert_dir }}/{{ inventory_hostname }}/{{ inventory_hostname }}.crt"
         dest: "{{ global_dreg_apache_dir }}/{{ inventory_hostname }}_registry.crt"
         remote_src: yes
-
-- name: Download certs from docker registry server to worker servers
-  hosts: worker_servers
-  become: yes
-  become_user: root
-  vars:
-    global_dreg_certs_host: "dreg0.lan"
-    global_worker_ca_dir: "/usr/local/share/ca-certificates/"
-    global_docker_certs_dir: "/etc/docker/certs.d"
-  tasks:
-    - name: Create SSL dirs
-      file:
-        dest: "{{ item }}"
-        recurse: yes
-        state: directory
-      with_items:
-        - "{{ global_docker_certs_dir }}"
-        - "{{ global_docker_certs_dir }}/{{ global_dreg_certs_host }}"
-        - "{{ global_worker_ca_dir }}/{{ global_dreg_certs_host }}"
-
-    - name: Download docker registry SSL cert
-      get_url:
-        url: "{{ item.url }}"
-        dest: "{{ item.dest }}"
-      with_items:
-        - url: "http://{{ global_dreg_certs_host }}/{{ global_dreg_certs_host }}_registry.crt"
-          dest: "{{ global_docker_certs_dir }}/{{ global_dreg_certs_host }}/ca.crt"
-
-    - name: Copy {{ global_docker_certs_dir }}/{{ global_dreg_certs_host }}/ca.crt to {{ global_worker_ca_dir }}/{{ global_dreg_certs_host }} ca certs dir
-      copy:
-        src: "{{ global_docker_certs_dir }}/{{ global_dreg_certs_host }}/ca.crt"
-        dest: "{{ global_worker_ca_dir }}/{{ global_dreg_certs_host }}/ca.crt"
-        remote_src: yes
-    
-    - name: Run update-ca-certificates on worker
-      shell: update-ca-certificates
-      register: update_ca_certs
-    
-    - name: Debug update ca certs
-      debug:
-        var: update_ca_certs

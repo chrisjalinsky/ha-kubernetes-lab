@@ -26,19 +26,20 @@ vagrant up
 
 ###The vagrant environment:
 Here is a yaml representation of the dynamic inventory. The idea is to use a JSON API to retrieve dynamic inventory, it's currently static:
-The hosts are built with the vagrant box 'bento/ubuntu-16.04' and utilize systemd unit files
+The hosts are built with the vagrant box 'bento/ubuntu-16.04' and utilize systemd unit files.
 
 NOTE: ansible user's ssh private key file is using $HOME. Adjust accordingly.
 ```
 cat ansible/hosts.yaml
 ```
+The ansible/hosts.yaml file is where I modify the count and specs for the vagrant boxes. For instance, I removed several workers to make the builder lighter on my dev machine.
 
 ###Run the Ansible Playbooks:
 ```
 ansible/run_playbooks.sh
 ```
 ###Ansible playbooks overview:
-Below are the individual playbooks
+Below are the individual playbooks. There are additional playbooks and roles that aren't in the ./run_playbooks.sh script.
 
 ####Infrastructure DNS server
 Installs DNS in the environment, and is not necessary if DNS already exists
@@ -88,28 +89,11 @@ Install k8s worker servers (kube-proxy, kubelet)
 ansible-playbook provision_k8s_workers.yaml -i inventory.py
 ```
 
-####Infrastructure L3 Routing
-The hosts need to resolve each other's k8s subnets, so we create routes on the hosts.
-NOTE: These routes are not persistent across reboots
-```
-ansible-playbook provision_k8s_l3_routes.yml -i inventory.py
-```
-
-####Kubernetes Addons (kubeDNS, Heapster, Dashboard)
-To create the addons k8s templates:
-```
-ansible-playbook provision_k8s_addons.yml -i inventory.py
-```
-
-####Remove TLS certs
-Purge the certificates if you need to build new TLS certs.
-```
-ansible-playbook purge_ssl_certs.yaml -i inventory.py
-```
+#After Running the Playbooks
 
 ###etcd3
 
-Check cluster health on etcd servers
+Check cluster health on the etcd servers
 ```
 etcdctl --ca-file=/etc/etcd/ca.pem cluster-health
 ```
@@ -130,7 +114,9 @@ As an alternative to Flannel, Calico, Weave, etc. K8s utilizes a CNI plugin netw
 Also we are utilizing CNI Plugin architecture with the kubelet process, which allows you to swap containerization at runtime. Therefore Docker does not need to be reconfigured with an overlay network. We'll use basic L3 networking as a proof of concept.
 
 ####L3 Routes
-Add routes to the workers and controllers, depending on which host you are on, you will not want to alter the newly created kubernetes CNI cbr0 default route. (This route isn't configured until services are created.) Otherwise, add the necessary routes to the cluster. Eventually I'll create network interface ansible playbooks for this, so that further HA and fail over can be achieved, i.e. NIC bonding.
+Add routes to the workers and controllers, depending on which host you are on, you will not want to alter the newly created kubernetes CNI cbr0 default route. (This route isn't configured until pods are created.) Otherwise, add the necessary routes to the cluster. Eventually I'll create network interface ansible playbooks for this, so that further HA and fail over can be achieved, i.e. NIC bonding.
+
+NOTE: The routes below are approximate. Until the workers cbr0 iface is created, you don't really know which L3 routes to add on each worker node. The extra playbook listed below fails occasionally, because the declarative routes overlap.
 ```
 route add -net 10.200.0.0 netmask 255.255.255.0 gw 10.240.0.30
 route add -net 10.200.1.0 netmask 255.255.255.0 gw 10.240.0.31
@@ -162,7 +148,7 @@ kind: ReplicationController
 metadata:
   name: nginx
 spec:
-  replicas: 1
+  replicas: 3
   template:
     metadata:
       labels:
@@ -195,8 +181,48 @@ Check resolv in pods:
 kubectl --namespace=kube-system exec kube-dns-v18-tnt4r -c kubedns -- cat /etc/resolv.conf
 ```
 
-###Heapster
-This adds monitoring to the cluster. I simply copied the github cluster/addons into a role.
+## Additional Ansible Playbooks
+####Infrastructure L3 Routing
+The hosts need to resolve each other's k8s subnets, so we create routes on the hosts as mentioned above.
 
-###Kubernetes Dashboard
-I added a NodePort to the service so that I can reach the dashboard at port 30050 of the worker nodes.
+NOTE: These routes are not persistent across reboots, and I'll need to come up with better logic to test the routes when the docker cbr0 bridge is created.
+I don't know how the k8s decides which subnet to assign to cbr0 yet, so the declarative assignment in vars/makevault.yml doesn't always work out.
+```
+ansible-playbook provision_k8s_l3_routes.yaml -i inventory.py
+```
+
+####Kubernetes Addons (kubeDNS, Heapster, Dashboard)
+To create the addons k8s templates and create with kubectl.
+```
+ansible-playbook provision_k8s_addons.yaml -i inventory.py
+```
+
+####Docker Private Registry servers
+This creates a private registry v2, on a host named dreg0.lan. We use openssl to create a self signed SSL cert which needs to be shared on the worker nodes. The registry files are located in /docker-registry by default. Listed in the ```vars/makevault.yml``` file are htpasswd credentials for logging into the registry.
+```
+ansible-playbook provision_docker_registry_servers.yaml -i inventory.py
+```
+
+####Expose Docker Registry SSL cert 
+We install Apache on the Registry Server and copy the self signed cert into the public www folder. Bad practice in production, but this is a lab.
+```
+ansible-playbook expose_docker_registry_ssl_cert.yaml -i inventory.py
+```
+
+####Download Registry cert on worker nodes
+We exposed the cert with Apache which is not secure by any means. We run update-ca-certificates after placing the cert where Docker expects.
+```
+ansible-playbook download_docker_registry_certs.yaml -i inventory.py
+```
+
+####Docker build app to push to registry for use
+This automates an nginx app build from a Dockerfile, which can be used to expose an ingress point into the cluster. It's a simple app that returns the details of the it's container from an Nginx web server. Useful for testing load balancing and additional features in Kubernetes.
+```
+ansible-playbook provision_docker_nginx.yaml -i inventory.py
+```
+
+####Remove TLS certs
+Purge the k8s certificates if you need to build new TLS certs.
+```
+ansible-playbook purge_ssl_certs.yaml -i inventory.py
+```
