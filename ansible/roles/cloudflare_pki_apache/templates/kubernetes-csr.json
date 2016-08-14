@@ -24,10 +24,10 @@
   "names": [
     {
       "C": "US",
-      "L": "Portland",
+      "L": "Denver",
       "O": "Kubernetes",
       "OU": "Cluster",
-      "ST": "Oregon"
+      "ST": "Colorado"
     }
   ]
 }

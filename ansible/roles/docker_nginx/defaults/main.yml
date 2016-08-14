@@ -1,4 +1,4 @@
 ---
 
 docker_nginx_templates_dir: "/opt/k8s_docker"
-docker_nginx_image_tag: "ad/appweb:latest"
+docker_nginx_image_tag: "dreg0.lan/appweb:latest"

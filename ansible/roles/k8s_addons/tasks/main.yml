@@ -16,6 +16,9 @@
   debug:
     var: kubectl_test_get_nodes
 
+- name: Pause 1 minute
+  pause: minutes=1
+
 - name: Create addons from k8s_addons_template_list
   when: kubectl_test_get_nodes.rc == 0
   ignore_errors: yes

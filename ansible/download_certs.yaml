@@ -15,11 +15,11 @@
         url: "{{ item.url }}"
         dest: "{{ item.dest }}"
       with_items:
-        - url: "http://core1.lan/kubernetes.pem"
+        - url: "http://dreg0.lan/kubernetes.pem"
           dest: "/etc/etcd/kubernetes.pem"
-        - url: "http://core1.lan/kubernetes-key.pem"
+        - url: "http://dreg0.lan/kubernetes-key.pem"
           dest: "/etc/etcd/kubernetes-key.pem"
-        - url: "http://core1.lan/ca.pem"
+        - url: "http://dreg0.lan/ca.pem"
           dest: "/etc/etcd/ca.pem"
 
 - name: Download certs from Cloudflare pki server on controller servers
@@ -38,9 +38,9 @@
         url: "{{ item.url }}"
         dest: "{{ item.dest }}"
       with_items:
-        - url: "http://core1.lan/kubernetes.pem"
+        - url: "http://dreg0.lan/kubernetes.pem"
           dest: "/var/lib/kubernetes/kubernetes.pem"
-        - url: "http://core1.lan/kubernetes-key.pem"
+        - url: "http://dreg0.lan/kubernetes-key.pem"
           dest: "/var/lib/kubernetes/kubernetes-key.pem"
-        - url: "http://core1.lan/ca.pem"
+        - url: "http://dreg0.lan/ca.pem"
           dest: "/var/lib/kubernetes/ca.pem"

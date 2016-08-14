@@ -9,7 +9,7 @@ ExecStart=/usr/bin/kube-proxy \
   --master={{ k8s_worker_master }} \
   --kubeconfig={{ k8s_worker_kubeconfig }} \
   --proxy-mode=iptables \
-  --v=4
+  --v=2
 
 Restart=on-failure
 RestartSec=5

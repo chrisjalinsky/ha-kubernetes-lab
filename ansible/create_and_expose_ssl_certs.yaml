@@ -1,7 +1,7 @@
 ---
 
 - name: Create SSL certs with Cloudflare PKI toolset and expose with Apache2
-  hosts: core_servers
+  hosts: dreg0.lan
   become: yes
   become_user: root
   roles:

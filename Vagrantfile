@@ -26,7 +26,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       box = meta["hostvars"][host]["vagrant_box"] ? meta["hostvars"][host]["vagrant_box"] : "bento/ubuntu-16.04"
       
       config.vm.define "#{host}" do |node|
-        node.vm.network "private_network", ip: "#{ip}"
+        #node.vm.network "private_network", ip: "#{ip}"
+        node.vm.network :public_network, ip: "#{ip}", bridge: "br0"
         node.vm.hostname = "#{host}"
         config.vm.provider "virtualbox" do |v, override|
           override.vm.box = "#{box}"
