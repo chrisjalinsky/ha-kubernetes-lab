@@ -12,3 +12,6 @@ worker0.lan
 
 [lb_servers]
 k8slb0.lan
+
+[docker_registry_servers]
+dreg0.lan
